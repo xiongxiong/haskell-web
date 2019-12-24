@@ -106,7 +106,7 @@ findUserByAuth (D.Auth email pass) = do
     where
         qry = "select id, is_email_verified \
             \from auths \
-            \where email = ? and pass = crypt(?, gen_salt('bf'))"
+            \where email = ? and pass = crypt(?, pass)"
 
 findEmailFromUserId :: PG r m => D.UserId -> m (Maybe D.Email)
 findEmailFromUserId uId = do
