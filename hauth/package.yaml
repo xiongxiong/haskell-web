@@ -38,6 +38,7 @@ dependencies:
 - postgresql-simple-migration
 - hedis
 - amqp
+- exceptions
 
 default-extensions:
 - NoImplicitPrelude

@@ -2,6 +2,11 @@ module Adapter.RabbitMQ.Common where
 
 import ClassyPrelude
 import Network.AMQP
+import Control.Concurrent
+import Data.Has
+import Data.Aeson
+import Katip
+import Control.Monad.Catch hiding (bracket)
 
 data State = State
     {
@@ -40,4 +45,35 @@ initQueue state@(State pubChan _) queueName exchangeName routingKey = do
     bindQueue pubChan queueName exchangeName routingKey
 
 initConsumer :: State -> Text -> (Message -> IO Bool) -> IO ()
-initConsumer (State _ conChan)
+initConsumer (State _ conChan) queueName handler = do
+    void . consumeMsgs conChan queueName Ack $ \(msg, env) -> void . forkIO $ do
+        result <- handler msg
+        if result then ackEnv env else rejectEnv env False
+
+type Rabbit r m = (Has State r, MonadReader r m, MonadIO m)
+
+publish :: (ToJSON a, Rabbit r m) => Text -> Text -> a -> m ()
+publish exchange routingKey payload = do 
+    (State chan _) <- asks getter
+    let msg = newMsg {msgBody = encode payload}
+    liftIO . void $ publishMsg chan exchange routingKey msg
+
+consumeAndProcess :: (KatipContext m, FromJSON a, MonadCatch m, MonadUnliftIO m) =>
+    Message -> (a -> m Bool) -> m Bool
+consumeAndProcess msg handler =
+    case eitherDecode' (msgBody msg) of
+        Left err -> withMsgAndErr msg err $ do
+            $(logTM) ErrorS "Malformed payload. Rejecting."
+            return False
+        Right payload -> do 
+            result <- tryAny (handler payload)
+            case result of
+                Left err -> withMsgAndErr msg (displayException err) $ do
+                    $(logTM) ErrorS "There was an exception when processing the msg. Rejecting."
+                    return False
+                Right bool ->
+                    return bool
+
+withMsgAndErr :: (KatipContext m, ToJSON e) => Message -> e -> m a -> m a 
+withMsgAndErr msg err = 
+    katipAddContext (sl "mqMsg" (show msg) <> sl "error" err)
