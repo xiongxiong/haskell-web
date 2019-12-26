@@ -8,16 +8,18 @@ import qualified Adapter.PostgreSQL.Auth as PG
 import qualified Adapter.Redis.Auth as Redis
 import Domain.Auth
 import Control.Monad.Fail
+import Control.Monad.Catch hiding (bracket)
 import Katip
 import qualified Adapter.RabbitMQ.Common as MQ
 import qualified Adapter.RabbitMQ.Auth as MQAuth
+import qualified Adapter.HTTP.Main as HTTP
 
 type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
 newtype App a = App
     {
         unApp :: ReaderT State (KatipContextT IO) a
-    } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO, KatipContext, Katip, MonadCatch)
+    } deriving (Applicative, Functor, Monad, MonadReader State, MonadIO, KatipContext, Katip, MonadThrow, MonadCatch)
 
 run :: LogEnv -> State -> App a -> IO a
 run le state = runKatipContextT le () mempty . flip runReaderT state . unApp
@@ -42,15 +44,15 @@ instance SessionRepo App where
     newSession = Redis.newSession
     findUserIdBySessionId = Redis.findUserIdBySessionId
 
-withState :: (LogEnv -> State -> IO ()) -> IO ()
+withState :: (Int -> LogEnv -> State -> IO ()) -> IO ()
 withState action = 
     withKatip $ \le -> do
-        mState <- newVarIO M.initialState
+        mState <- newTVarIO M.initialState
         PG.withState pgCfg $ \pgState ->
             Redis.withState redisCfg $ \redisState ->
                 MQ.withState mqCfg $ \mqState -> do
                     let state = (pgState, redisState, mqState, mState)
-                    action le state
+                    action port le state
     where
         mqCfg = "amqp://guest:guest@localhost:5672/%2F"
         redisCfg = "redis://localhost:6379/0"
@@ -61,13 +63,15 @@ withState action =
                 , PG.configMaxOpenConnPerStripe = 5
                 , PG.configIdleConnTimeout = 10
             }
+        port = 3000
 
 main :: IO ()
 main =
-    withState $ \le state@(_, _, mqState, _) -> do
+    withState $ \port le state@(_, _, mqState, _) -> do
         let runner = run le state
         MQAuth.init mqState runner
-        runner action
+        -- runner action
+        HTTP.main port runner
 
 action :: App ()
 action = do

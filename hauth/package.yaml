@@ -39,6 +39,14 @@ dependencies:
 - hedis
 - amqp
 - exceptions
+- http-types
+- scotty 
+- cookie
+- wai 
+- wai-extra
+- blaze-builder
+- digestive-functors 
+- digestive-functors-aeson
 
 default-extensions:
 - NoImplicitPrelude

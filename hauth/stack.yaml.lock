@@ -11,6 +11,20 @@ packages:
       sha256: 21c7e61fceea98d14b453fc74c947b715ce33fe4c665c65b1f28c6f417d4ab7e
   original:
     hackage: string-random-0.1.2.0
+- completed:
+    hackage: digestive-functors-0.8.4.0@sha256:eb2ce9e55a8d2f26a9f5c8386e0d764fe1ce47eb0430af84104bf12dab431fa9,3287
+    pantry-tree:
+      size: 1682
+      sha256: 825eb6308f9b5ec6f7527401f37369b3997eb3b012d3ce2a8fdd071067faf84e
+  original:
+    hackage: digestive-functors-0.8.4.0
+- completed:
+    hackage: digestive-functors-aeson-1.1.27@sha256:a389cfeda1f5f376968b14afc631587abb93172e182b63422b8ddb3d8522c621,1584
+    pantry-tree:
+      size: 346
+      sha256: 7a26dd5aad398f01bf3cb11ff887e9e1054eab1b2bd436b9494720f4be69baba
+  original:
+    hackage: digestive-functors-aeson-1.1.27
 snapshots:
 - completed:
     size: 524804
