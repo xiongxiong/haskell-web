@@ -24,22 +24,15 @@ run :: LogEnv -> State -> App a -> IO a
 run le state = runKatipContextT le () mempty . flip runReaderT state . unApp
 
 instance AuthRepo App where
-    -- addAuth = M.addAuth
-    -- setEmailAsVerified = M.setEmailAsVerified
-    -- findUserByAuth = M.findUserByAuth
-    -- findEmailFromUserId = M.findEmailFromUserId
     addAuth = PG.addAuth
     setEmailAsVerified = PG.setEmailAsVerified
     findUserByAuth = PG.findUserByAuth
     findEmailFromUserId = PG.findEmailFromUserId
 
 instance EmailVerificationNotif App where
-    -- notifyEmailVerification = M.notifyEmailVerification
     notifyEmailVerification = MQAuth.notifyEmailVerification
 
 instance SessionRepo App where
-    -- newSession = M.newSession
-    -- findUserIdBySessionId = M.findUserIdBySessionId
     newSession = Redis.newSession
     findUserIdBySessionId = Redis.findUserIdBySessionId
 
@@ -69,7 +62,6 @@ main =
     withState $ \port le state@(_, _, mqState, _) -> do
         let runner = run le state
         MQAuth.init mqState runner
-        -- runner action
         HTTP.main port runner
 
 action :: App ()

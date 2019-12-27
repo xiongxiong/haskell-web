@@ -12,19 +12,6 @@ import Web.Cookie
 import Domain.Auth
 import Data.Time.Lens
 
-parseAndValidateJSON :: (ScottyError e, MonadIO m, ToJSON v)
-    => DF.Form v m a -> ActionT e m a
-parseAndValidateJSON form = do
-    val <- jsonData `rescue` (pure . const Null)
-    validationResult <- lift $ DF.digestJSON form val
-    case validationResult of
-        (v, Nothing) -> do
-            status status400
-            json $ DF.jsonErrors v
-            finish
-        (_, Just result) -> 
-            return result
-
 toResult :: Either e a -> DF.Result e a
 toResult = either DF.Error DF.Success
 
@@ -61,13 +48,3 @@ getCurrentUserId = do
         Nothing -> return Nothing
         Just sId -> lift $ resolveSessionId sId
 
-reqCurrentUserId :: (SessionRepo m, ScottyError e) => ActionT e m UserId
-reqCurrentUserId = do
-    mayUserId <- getCurrentUserId
-    case mayUserId of
-        Nothing -> do
-            status status401
-            json ("AuthRequired" :: Text)
-            finish
-        Just userId -> 
-            return userId
