@@ -1,6 +1,4 @@
-module Lib
-    ( someFunc
-    ) where
+module Lib where
 
 import ClassyPrelude hiding (fail)
 import qualified Adapter.InMemory.Auth as M
@@ -13,6 +11,7 @@ import Katip
 import qualified Adapter.RabbitMQ.Common as MQ
 import qualified Adapter.RabbitMQ.Auth as MQAuth
 import qualified Adapter.HTTP.Main as HTTP
+import Text.StringRandom
 
 type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
@@ -50,7 +49,7 @@ withState action =
         mState <- newTVarIO M.initialState
         PG.withState pgCfg $ \pgState ->
             Redis.withState redisCfg $ \redisState ->
-                MQ.withState mqCfg $ \mqState -> do
+                MQ.withState mqCfg 16 $ \mqState -> do
                     let state = (pgState, redisState, mqState, mState)
                     action port le state
     where
@@ -80,11 +79,7 @@ action = do
         passw = either undefined id $ mkPassword "1234ABCDefgh"
         auth = Auth email passw
     register auth
-    vCode <- do
-        m <- pollNotif email
-        case m of
-            Nothing -> throwString "nothing -- verification code"
-            Just v -> return v
+    vCode <- pollNotif email
     verifyEmail vCode
     session <- do
         m <- login auth

@@ -13,3 +13,14 @@ sudo /etc/init.d/postgresql restart
 > psql
 > \q
 ```
+
+## RabbitMQ
+
+```
+service rabbitmq-server start
+rabbitmq-plugins enable rabbitmq_management
+```
+
+```
+http://guest:guest@localhost:15672/
+```

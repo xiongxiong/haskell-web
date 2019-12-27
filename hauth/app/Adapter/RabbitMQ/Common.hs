@@ -1,12 +1,13 @@
 module Adapter.RabbitMQ.Common where
 
-import ClassyPrelude
+import ClassyPrelude hiding (tryAny)
 import Network.AMQP
 import Control.Concurrent
 import Data.Has
 import Data.Aeson
 import Katip
 import Control.Monad.Catch hiding (bracket)
+import Control.Exception.Safe (tryAny)
 
 data State = State
     {
@@ -58,7 +59,7 @@ publish exchange routingKey payload = do
     let msg = newMsg {msgBody = encode payload}
     liftIO . void $ publishMsg chan exchange routingKey msg
 
-consumeAndProcess :: (KatipContext m, FromJSON a, MonadCatch m, MonadUnliftIO m) =>
+consumeAndProcess :: (KatipContext m, FromJSON a, MonadCatch m) =>
     Message -> (a -> m Bool) -> m Bool
 consumeAndProcess msg handler =
     case eitherDecode' (msgBody msg) of
