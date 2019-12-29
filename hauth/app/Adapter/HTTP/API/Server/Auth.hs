@@ -1,4 +1,4 @@
-module Adapter.HTTP.API.Auth where
+module Adapter.HTTP.API.Server.Auth where
 
 import ClassyPrelude
 import Web.Scotty.Trans
@@ -6,8 +6,9 @@ import Domain.Auth
 import qualified Text.Digestive.Form as DF
 import Text.Digestive.Form ((.:))
 import Adapter.HTTP.Common
-import Adapter.HTTP.API.Common
+import Adapter.HTTP.API.Server.Common
 import Network.HTTP.Types.Status
+import Adapter.HTTP.API.Types.Auth ()
 import Data.Aeson hiding (json, (.:))
 import Katip
 
@@ -29,9 +30,9 @@ actionRegister = do
     input <- parseAndValidateJSON authForm
     domainResult <- lift $ register input
     case domainResult of
-        Left RegistrationErrEmailTaken -> do
+        Left err -> do
             status status400
-            json ("EmailTaken" :: Text)
+            json err
         _ -> return ()
 
 authForm :: (Monad m) => DF.Form [Text] m Auth
@@ -45,9 +46,9 @@ actionVerifyEmail = do
     input <- parseAndValidateJSON verifyEmailForm
     domainResult <- lift $ verifyEmail input
     case domainResult of
-        Left EmailVerificationErrInvalidCode -> do
+        Left err -> do
             status status400
-            json ("InvalidCode" :: Text)
+            json err
         _ -> return ()
 
 verifyEmailForm :: (Monad m) => DF.Form [Text] m VerificationCode
@@ -58,12 +59,9 @@ actionLogin = do
     input <- parseAndValidateJSON authForm
     domainResult <- lift $ login input
     case domainResult of
-        Left LoginErrInvalidAuth -> do
+        Left err -> do
             status status400
-            json ("InvalidAuth" :: Text)
-        Left LoginErrEmailNotVerified -> do
-            status status400
-            json ("EmailNotVerified" :: Text)
+            json err
         Right sId -> do
             setSessionIdInCookie sId
             return ()
@@ -74,4 +72,4 @@ actionUsers = do
     mayEmail <- lift $ getUser userId
     case mayEmail of
         Nothing -> raise $ stringError "Should not happen: SessionId map to invalid UserId"
-        Just email -> json $ rawEmail email
+        Just email -> json email

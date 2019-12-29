@@ -1,11 +1,11 @@
-module Adapter.HTTP.API.Main where
+module Adapter.HTTP.API.Server.Main where
 
 import Domain.Auth 
 import ClassyPrelude
 import Web.Scotty.Trans
 import Network.HTTP.Types.Status
 import qualified Adapter.HTTP.API.Auth as Auth
-import Adapter.HTTP.API.Common
+import Adapter.HTTP.API.Server.Common
 import Katip
 import Network.Wai
 import Network.Wai.Middleware.Gzip

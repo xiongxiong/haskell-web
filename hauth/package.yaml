@@ -52,6 +52,11 @@ dependencies:
 - digestive-functors-scotty
 - wai-middleware-static
 - warp
+- http-client
+- http-client-tls
+- wreq
+- req
+- http-conduit
 
 default-extensions:
 - NoImplicitPrelude
