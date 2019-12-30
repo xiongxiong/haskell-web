@@ -3,7 +3,7 @@
 module Adapter.HTTP.API.Types.Auth where
 
 import ClassyPrelude
-import Domain.Auth
+import Domain.Auth.Types
 import Data.Aeson
 import Adapter.HTTP.API.Types.AesonHelper
 

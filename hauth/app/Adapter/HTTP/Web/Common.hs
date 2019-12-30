@@ -2,7 +2,7 @@ module Adapter.HTTP.Web.Common where
 
 import ClassyPrelude
 import Web.Scotty.Trans
-import Domain.Auth
+import Domain.Auth.Types
 import qualified Text.Digestive.View as DF
 import Text.Blaze.Html5 ((!))
 import qualified Text.Blaze.Html5 as H

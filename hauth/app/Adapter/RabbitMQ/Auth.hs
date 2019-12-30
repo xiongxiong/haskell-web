@@ -2,12 +2,11 @@ module Adapter.RabbitMQ.Auth where
 
 import ClassyPrelude
 import Adapter.RabbitMQ.Common
-import qualified Adapter.InMemory.Auth as M
 import Network.AMQP
 import Katip
 import Data.Aeson
 import Data.Aeson.TH
-import qualified Domain.Auth as D
+import qualified Domain.Auth.Types as D
 import Control.Monad.Catch
 
 data EmailVerificationPayload = EmailVerificationPayload
@@ -32,7 +31,7 @@ notifyEmailVerification email vCode =
     let payload = EmailVerificationPayload (D.rawEmail email) vCode
     in  publish "auth" "userRegistered" payload
 
-consumeEmailVerification :: (M.InMemory r m, KatipContext m, MonadCatch m)
+consumeEmailVerification :: (EmailVerificationSender m, KatipContext m, MonadCatch m)
     => (m Bool -> IO Bool) -> Message -> IO Bool
 consumeEmailVerification runner msg =
     runner $ consumeAndProcess msg handler
@@ -44,11 +43,14 @@ consumeEmailVerification runner msg =
                     return False
                 Right email -> do
                     let vCode = emailVerificationPayloadVerificationCode payload
-                    M.notifyEmailVerification email vCode
+                    sendEmailVerification email vCode
                     return True
 
-init :: (M.InMemory r m, KatipContext m, MonadCatch m)
+init :: (EmailVerificationSender m, KatipContext m, MonadCatch m)
     => State -> (m Bool -> IO Bool) -> IO ()
 init state runner = do
     initQueue state "verifyEmail" "auth" "userRegistered"
     initConsumer state "verifyEmail" (consumeEmailVerification runner)
+
+class (Monad m) => EmailVerificationSender m where
+    sendEmailVerification :: D.Email -> D.VerificationCode -> m ()

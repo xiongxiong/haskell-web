@@ -15,8 +15,14 @@ data State = State
         , stateConsumerChan :: Channel
     }
 
-withState :: String -> Integer -> (State -> IO a) -> IO a
-withState connUri prefetchCount action = 
+data Config = Config
+    {
+          configUrl :: String
+        , configPrefetchCount :: Integer
+    }
+
+withState :: Config -> (State -> IO a) -> IO a
+withState config action = 
     bracket initState destroyState action'
     where
         initState = do
@@ -24,10 +30,10 @@ withState connUri prefetchCount action =
             consumer <-  openConnAndChan
             return (publisher, consumer)
         openConnAndChan = do
-            conn <- openConnection'' . fromURI $ connUri
+            conn <- openConnection'' . fromURI . configUrl $ config
             chan <- openChannel conn
             confirmSelect chan False
-            qos chan 0 (fromInteger prefetchCount) True
+            qos chan 0 (fromInteger $ configPrefetchCount config) True
             return (conn, chan)
         destroyState ((conn1, _), (conn2, _)) = do
             closeConnection conn1

@@ -2,7 +2,7 @@ module Adapter.HTTP.API.Server.Common where
 
 import ClassyPrelude
 import Web.Scotty.Trans
-import Domain.Auth
+import Domain.Auth.Types
 import qualified Text.Digestive.Form as DF
 import qualified Text.Digestive.Aeson as DF
 import Data.Aeson hiding (json)

@@ -9,7 +9,7 @@ import Data.Aeson hiding (json)
 import Network.HTTP.Types.Status
 import Blaze.ByteString.Builder (toLazyByteString)
 import Web.Cookie
-import Domain.Auth
+import Domain.Auth.Types
 import Data.Time.Lens
 
 toResult :: Either e a -> DF.Result e a
@@ -46,5 +46,5 @@ getCurrentUserId = do
     maySessionId <- getCookie "sId"
     case maySessionId of
         Nothing -> return Nothing
-        Just sId -> lift $ resolveSessionId sId
+        Just sId -> lift $ findUserIdBySessionId sId
 

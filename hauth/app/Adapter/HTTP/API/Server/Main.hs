@@ -1,22 +1,22 @@
 module Adapter.HTTP.API.Server.Main where
 
-import Domain.Auth 
+import Domain.Auth.Types
 import ClassyPrelude
 import Web.Scotty.Trans
 import Network.HTTP.Types.Status
-import qualified Adapter.HTTP.API.Auth as Auth
+import qualified Adapter.HTTP.API.Server.Auth as Auth
 import Adapter.HTTP.API.Server.Common
 import Katip
 import Network.Wai
 import Network.Wai.Middleware.Gzip
 import Network.Wai.Middleware.RequestLogger
 
-type Main m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m)
+type Env m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m, AuthService m)
 
-main :: Main m => (m Response -> IO Response) -> IO Application
+main :: Env m => (m Response -> IO Response) -> IO Application
 main runner = scottyAppT runner routes
 
-routes :: Main m => ScottyT LText m ()
+routes :: Env m => ScottyT LText m ()
 routes = do
     middleware $ gzip $ def { gzipFiles = GzipCompress }
     middleware logStdout

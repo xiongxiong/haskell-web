@@ -1,7 +1,7 @@
 module Adapter.Redis.Auth where
 
 import ClassyPrelude
-import qualified Domain.Auth as D
+import qualified Domain.Auth.Types as D
 import Text.StringRandom
 import Data.Has
 import qualified Database.Redis as R

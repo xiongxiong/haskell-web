@@ -1,17 +1,17 @@
 module Adapter.HTTP.Main where
 
-import Domain.Auth
+import Domain.Auth.Types
 import ClassyPrelude
-import qualified Adapter.HTTP.API.Main as API
+import qualified Adapter.HTTP.API.Server.Main as API
 import qualified Adapter.HTTP.Web.Main as Web
 import Katip
 import Network.Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Middleware.Vhost
 
-type Main m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m)
+type Env m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m, AuthService m)
 
-main :: Main m => Int -> (m Response -> IO Response) -> IO ()
+main :: Env m => Int -> (m Response -> IO Response) -> IO ()
 main port runner = do
     web <- Web.main runner
     api <- API.main runner

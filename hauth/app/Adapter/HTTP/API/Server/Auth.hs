@@ -2,7 +2,7 @@ module Adapter.HTTP.API.Server.Auth where
 
 import ClassyPrelude
 import Web.Scotty.Trans
-import Domain.Auth
+import Domain.Auth.Types
 import qualified Text.Digestive.Form as DF
 import Text.Digestive.Form ((.:))
 import Adapter.HTTP.Common
@@ -12,7 +12,7 @@ import Adapter.HTTP.API.Types.Auth ()
 import Data.Aeson hiding (json, (.:))
 import Katip
 
-type Routes e m = (ScottyError e, MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m)
+type Routes e m = (ScottyError e, MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m, AuthService m)
 
 routes :: Routes e m => ScottyT e m ()
 routes = do

@@ -5,7 +5,7 @@ import Data.Pool
 import Database.PostgreSQL.Simple
 import Database.PostgreSQL.Simple.Migration
 import Data.Time
-import qualified Domain.Auth as D
+import qualified Domain.Auth.Types as D
 import Data.Has
 import Text.StringRandom
 

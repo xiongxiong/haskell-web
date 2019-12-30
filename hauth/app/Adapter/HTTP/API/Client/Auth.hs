@@ -5,9 +5,10 @@ import Network.HTTP.Client
 import Data.Has
 import qualified Domain.Auth as D
 import Network.HTTP.Types
-import Adapter.HTTP.API.Type.Auth ()
+import Adapter.HTTP.API.Types.Auth ()
 import Adapter.HTTP.API.Client.Common
 import Data.Aeson
+import Control.Monad.Catch
 
 register :: HttpClient r m => D.Auth -> m (Either D.RegistrationErr ())
 register auth = do
@@ -23,7 +24,21 @@ register auth = do
         (Status 200 _) -> return $ Right ()
         _ -> Left <$> parseOrErr req resp
 
-login :: HttpClient r m => D.Auth -> m (Either D.LoginError Session)
+verifyEmail :: HttpClient r m => D.VerificationCode -> m (Either D.EmailVerificationErr ())
+verifyEmail vCode = do
+    State initReq mgr <- asks getter
+    let req = initReq
+            {
+                  method = "POST"
+                , path = "/api/auth/verifyEmail"
+                , requestBody = RequestBodyLBS $ encode vCode
+            }
+    resp <- liftIO $ httpLbs req mgr
+    case responseStatus resp of
+        (Status 200 _) -> return $ Right ()
+        _ -> Left <$> parseOrErr req resp        
+
+login :: HttpClient r m => D.Auth -> m (Either D.LoginErr Session)
 login auth = do
     State initReq mgr <- asks getter
     let req = initReq
@@ -50,5 +65,3 @@ getUser session = do
     case responseStatus resp of
         (Status 200 _) -> parseOrErr req resp
         _ -> throwM $ UnexpectedResponse req resp
-
-        

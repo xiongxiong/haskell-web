@@ -1,6 +1,6 @@
 module Adapter.HTTP.Web.Main where
 
-import Domain.Auth
+import Domain.Auth.Types
 import ClassyPrelude
 import Web.Scotty.Trans
 import Network.HTTP.Types.Status
@@ -11,7 +11,7 @@ import Network.Wai.Middleware.Gzip
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai
 
-type Env m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m)
+type Env m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m, AuthService m)
 
 main :: Env m => (m Response -> IO Response) -> IO Application
 main runner = do

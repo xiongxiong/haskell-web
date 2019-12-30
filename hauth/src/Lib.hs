@@ -4,7 +4,8 @@ import ClassyPrelude hiding (fail)
 import qualified Adapter.InMemory.Auth as M
 import qualified Adapter.PostgreSQL.Auth as PG
 import qualified Adapter.Redis.Auth as Redis
-import Domain.Auth
+import Domain.Auth.Types
+import qualified Domain.Auth.Service as D
 import Control.Monad.Fail
 import Control.Monad.Catch hiding (bracket)
 import Katip
@@ -12,6 +13,7 @@ import qualified Adapter.RabbitMQ.Common as MQ
 import qualified Adapter.RabbitMQ.Auth as MQAuth
 import qualified Adapter.HTTP.Main as HTTP
 import Text.StringRandom
+import qualified Config
 
 type State = (PG.State, Redis.State, MQ.State, TVar M.State)
 
@@ -36,33 +38,40 @@ instance SessionRepo App where
     newSession = Redis.newSession
     findUserIdBySessionId = Redis.findUserIdBySessionId
 
-withState :: (Int -> LogEnv -> State -> IO ()) -> IO ()
-withState action = 
+instance AuthService App where
+    register = D.register
+    verifyEmail = D.verifyEmail
+    login = D.login
+    resolveSessionId = D.resolveSessionId
+    getUser = D.getUser
+
+instance MQAuth.EmailVerificationSender App where
+    sendEmailVerification = M.notifyEmailVerification
+
+withState :: Config.Config -> (Int -> LogEnv -> State -> IO ()) -> IO ()
+withState config action = 
     withKatip $ \le -> do
         mState <- newTVarIO M.initialState
-        PG.withState pgCfg $ \pgState ->
-            Redis.withState redisCfg $ \redisState ->
-                MQ.withState mqCfg 16 $ \mqState -> do
+        PG.withState (Config.configPG config) $ \pgState ->
+            Redis.withState (Config.configRedis config) $ \redisState ->
+                MQ.withState (Config.configMQ config) $ \mqState -> do
                     let state = (pgState, redisState, mqState, mState)
-                    action port le state
-    where
-        mqCfg = "amqp://guest:guest@localhost:5672/%2F"
-        redisCfg = "redis://localhost:6379/0"
-        pgCfg = PG.Config
-            {
-                  PG.configUrl = "postgresql://hauth:hauth@localhost/hauth"
-                , PG.configStripeCount = 2
-                , PG.configMaxOpenConnPerStripe = 5
-                , PG.configIdleConnTimeout = 10
-            }
-        port = 3000
+                    action (Config.configPort config) le state
 
-main :: IO ()
-main =
-    withState $ \port le state@(_, _, mqState, _) -> do
+mainWithConfig :: Config.Config -> IO ()
+mainWithConfig config =
+    withState config $ \port le state@(_, _, mqState, _) -> do
         let runner = run le state
         MQAuth.init mqState runner
         HTTP.main port runner
+
+main :: IO ()
+main = do
+    config <- Config.fromEnv
+    mainWithConfig config
+
+mainDev :: IO ()
+mainDev = mainWithConfig Config.devConfig
 
 action :: App ()
 action = do
