@@ -57,6 +57,7 @@ dependencies:
 - wreq
 - req
 - http-conduit
+- hspec
 
 default-extensions:
 - NoImplicitPrelude

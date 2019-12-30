@@ -3,7 +3,7 @@ module Adapter.HTTP.API.Client.Auth where
 import ClassyPrelude
 import Network.HTTP.Client
 import Data.Has
-import qualified Domain.Auth as D
+import qualified Domain.Auth.Types as D
 import Network.HTTP.Types
 import Adapter.HTTP.API.Types.Auth ()
 import Adapter.HTTP.API.Client.Common

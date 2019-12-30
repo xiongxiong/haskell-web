@@ -21,7 +21,7 @@ migrate pool = withResource pool $ \conn -> do
         cmds =
             [
                   MigrationInitialization
-                , MigrationDirectory "app/Adapter/PostgreSQL/Migrations"
+                , MigrationDirectory "src/Adapter/PostgreSQL/Migrations"
             ]
 
 data Config = Config
