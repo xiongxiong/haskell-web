@@ -76,9 +76,17 @@ mainDev = mainWithConfig Config.devConfig
 action :: App ()
 action = do
     randEmail <- liftIO $ stringRandomIO "[a-z0-9]{5}@test\\.com"
-    let email = either undefined id $ mkEmail randEmail
-        passw = either undefined id $ mkPassword "1234ABCDefgh"
-        auth = Auth email passw
+    email <- case mkEmail randEmail of
+        Left err -> do
+            liftIO . sequence . (map putStrLn) $ err
+            throwString "Invalid email"
+        Right email -> return email
+    passw <- case mkPassword "1234ABCDefgh" of
+        Left err -> do
+            liftIO . sequence . (map putStrLn) $ err
+            throwString "Invalid password"
+        Right passw -> return passw
+    let auth = Auth email passw
     register auth
     vCode <- pollNotif email
     verifyEmail vCode

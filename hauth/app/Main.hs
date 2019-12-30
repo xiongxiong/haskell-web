@@ -3,4 +3,4 @@ module Main where
 import ClassyPrelude
 
 main :: IO ()
-main = undefined
+main = putStrLn "hello"
