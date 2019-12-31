@@ -11,10 +11,13 @@ import Network.Wai.Middleware.Vhost
 
 type Env m = (MonadIO m, KatipContext m, AuthRepo m, EmailVerificationNotif m, SessionRepo m, AuthService m)
 
-main :: Env m => Int -> (m Response -> IO Response) -> IO ()
-main port runner = do
+app :: Env m => (m Response -> IO Response) -> IO Application
+app runner = do
     web <- Web.main runner
     api <- API.main runner
-    run port $ vhost [(pathBeginsWith "api", api)] web
+    return $ vhost [(pathBeginsWith "api", api)] web
     where
         pathBeginsWith path req = headMay (pathInfo req) == Just path
+
+main :: Env m => Int -> (m Response -> IO Response) -> IO ()
+main port runner = app runner >>= run port

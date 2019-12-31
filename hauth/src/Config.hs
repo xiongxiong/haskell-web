@@ -11,7 +11,7 @@ data Config = Config
         , configRedis :: String
         , configMQ :: MQ.Config
         , configPG :: PG.Config
-    }
+    } deriving (Show, Eq)
 
 envFromString :: (IsString a) => String -> IO a
 envFromString key = fromString <$> getEnv key

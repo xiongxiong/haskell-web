@@ -30,7 +30,7 @@ data Config = Config
                 , configStripeCount :: Int
                 , configMaxOpenConnPerStripe :: Int
                 , configIdleConnTimeout :: NominalDiffTime
-            }
+            } deriving (Show, Eq)
 
 withPool :: Config -> (State -> IO a) -> IO a
 withPool cfg action = 

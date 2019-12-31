@@ -19,7 +19,7 @@ data Config = Config
     {
           configUrl :: String
         , configPrefetchCount :: Integer
-    }
+    } deriving (Show, Eq)
 
 withState :: Config -> (State -> IO a) -> IO a
 withState config action = 

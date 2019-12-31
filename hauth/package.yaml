@@ -81,6 +81,18 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - hauth
+  hauth-test-exe:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - hauth
+    - process
+    - hspec-wai
+    - hspec-wai-json
 
 tests:
   hauth-test:
@@ -92,3 +104,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - hauth
+    - process
+    - hspec-wai
+    - hspec-wai-json
